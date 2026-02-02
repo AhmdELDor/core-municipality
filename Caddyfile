@@ -1,0 +1,3 @@
+develexamunicipality.com, www.develexamunicipality.com {
+    reverse_proxy app:80
+}

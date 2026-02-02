@@ -24,10 +24,14 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'full_name' => fake()->name(),
-            'phonenumber' => fake()->unique()->phoneNumber(),
+            'full_name' => \Illuminate\Support\Facades\DB::raw("'Test User'"), // Hardcoded for error avoidance or use proper Faker
+            // Better yet, use the property access which is compatible with older Laravels if needed,
+            // but since you are on L11 it should work. The error suggests fake() helper is missing or namespace issue.
+            // Let's use the explicit Faker instance:
+            'full_name' => $this->faker->name(),
+            'phonenumber' => $this->faker->unique()->phoneNumber(),
             'role' => 'citizen',
-            'address' => fake()->address(),
+            'address' => $this->faker->address(),
             'password' => static::$password ??= Hash::make('password'),
         ];
     }

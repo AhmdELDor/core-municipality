@@ -1,0 +1,52 @@
+services:
+  app:
+    build: .
+    image: ahmadeldor/municipality-core-app:latest
+    container_name: municipality-core
+    restart: unless-stopped
+    expose:
+      - "80"
+    volumes:
+      - ./.env:/var/www/html/.env
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  db:
+    image: postgres:15
+    container_name: municipality-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  caddy:
+    image: caddy:latest
+    container_name: municipality-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db-data:
+  caddy_data:
+  caddy_config:
