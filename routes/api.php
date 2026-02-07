@@ -20,7 +20,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Public routes - Authentication
-Route::prefix('v1')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'loginMobile']);
     Route::post('/login/admin', [AuthController::class, 'loginAdmin']);
@@ -112,4 +111,3 @@ Route::prefix('v1')->group(function () {
             Route::post('/notifications/send-by-role', [NotificationController::class, 'sendByRole']);
         });
     });
-});
