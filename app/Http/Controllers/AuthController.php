@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Resources\UserResource;
+use App\Models\Otp;
 use App\Models\User;
 use App\Traits\ApiResponse;
 use App\Traits\LogsActivity;
@@ -20,15 +21,20 @@ class AuthController extends Controller
     {
         $validated = $request->validated();
 
-        $validated['password'] = Hash::make($validated['password']);
+        // Check verification status
+        $isVerified = Otp::where('phonenumber', $validated['phonenumber'])
+            ->where('status', 'verified')
+            ->exists();
 
-        // Set default role if not provided
-        if (!isset($validated['role'])) {
-            $validated['role'] = 'citizen';
+        if (!$isVerified) {
+            return $this->errorResponse('Phone number is not verified. Please verify your phone number first.', 403);
         }
 
-        $user = User::create($validated);
+        $validated['password'] = Hash::make($validated['password']);
 
+        $validated['role'] = 'citizen';
+
+        $user = User::create($validated);
         $token = $user->createToken('auth_token')->plainTextToken;
 
         // Log user registration
