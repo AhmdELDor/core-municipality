@@ -11,7 +11,7 @@ class OtpController extends Controller
 {
     use ApiResponse;
 
-    public function send(Request $request)
+    public function send(Request $request, \App\Services\TwilioWhatsAppService $twilioService)
     {
         $request->validate([
             'phonenumber' => 'required|string',
@@ -27,7 +27,7 @@ class OtpController extends Controller
             ->count();
 
         if ($phoneAttempts >= 5) {
-            return $this->errorResponse('Daily SMS limit reached for this phone number.', 429);
+            return $this->errorResponse('Daily messages limit reached for this phone number.', 429);
         }
 
         // Rate Limiting: Check IP Address
@@ -36,7 +36,7 @@ class OtpController extends Controller
             ->count();
 
         if ($ipAttempts >= 5) {
-            return $this->errorResponse('Daily SMS limit reached for this IP address.', 429);
+            return $this->errorResponse('Daily messages limit reached for this IP address.', 429);
         }
 
         // Generate OTP
@@ -52,11 +52,14 @@ class OtpController extends Controller
             'expires_at' => $expiresAt,
         ]);
 
-        // TODO: Integrate with actual SMS provider here
-        // For development, we might return the token or log it.
-        // Ideally, don't return it in production response.
+        // Send via Twilio WhatsApp
+        $sent = $twilioService->sendOtp($phonenumber, $token);
 
-        return $this->successResponse(['dev_token' => $token], 'OTP sent successfully.');
+        if (!$sent) {
+             return $this->errorResponse('Failed to send OTP via WhatsApp. Please check logs.', 500);
+        }
+
+        return $this->successResponse(null, 'OTP sent successfully to your WhatsApp.');
     }
 
     public function verify(Request $request)
