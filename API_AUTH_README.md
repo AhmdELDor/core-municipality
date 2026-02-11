@@ -2,8 +2,57 @@
 
 Base URL: `http://YOUR_DOMAIN/api/v1`
 
-## 1. Register User
+## 1. OTP Verification (Required before Register)
+Before registering, the user's phone number must be verified using WhatsApp OTP.
+
+### 1.1 Send OTP
+Sends a One-Time Password to the user's phone via WhatsApp.
+
+- **Endpoint:** `POST /otp/send`
+- **Auth Required:** No
+
+#### Request Body
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `phonenumber` | string | Yes | Phone number (e.g., +1234567890) |
+
+#### cURL Example
+```bash
+curl -X POST "http://127.0.0.1:9000/api/v1/otp/send" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{"phonenumber": "+1234567890"}'
+```
+
+### 1.2 Verify OTP
+Verifies the submitted token. Upon success, the system marks the phone number as verified in the database.
+
+- **Endpoint:** `POST /otp/verify`
+- **Auth Required:** No
+
+#### Request Body
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `phonenumber` | string | Yes | The phone number being verified |
+| `token` | string | Yes | The 6-digit code received |
+
+#### cURL Example
+```bash
+curl -X POST "http://127.0.0.1:9000/api/v1/otp/verify" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "phonenumber": "+1234567890",
+    "token": "123456"
+  }'
+```
+
+---
+
+## 2. Register User
 Creates a new user account.
+
+**Important:** The `phonenumber` must be verified via the `/otp/verify` endpoint first. If not verified, the API returns `403 Forbidden`.
 
 - **Endpoint:** `POST /register`
 - **Auth Required:** No
@@ -57,7 +106,7 @@ curl -X POST "http://127.0.0.1:9000/api/v1/register" \
 
 ---
 
-## 2. Login (Mobile/User)
+## 3. Login (Mobile/User)
 Authenticates a user using phone number and password.
 
 - **Endpoint:** `POST /login`
@@ -105,7 +154,7 @@ curl -X POST "http://127.0.0.1:9000/api/v1/login" \
 
 ---
 
-## 3. Logout
+## 4. Logout
 Invalidates the current user's access token.
 
 - **Endpoint:** `POST /logout`
